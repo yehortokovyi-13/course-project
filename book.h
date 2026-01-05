@@ -7,7 +7,6 @@
 class Book
 {
 public:
-    // Додаємо imagePath у конструктор (останній аргумент)
     Book(QString title = "", QString author = "", QString genre = "",
          int year = 0, int quantity = 0, QString imagePath = "");
 
