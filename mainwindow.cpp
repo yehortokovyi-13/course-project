@@ -1,11 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
-// --- ДОДАНІ БІБЛІОТЕКИ ДЛЯ PDF ---
 #include <QPdfWriter>
 #include <QPainter>
 #include <QDate>
-// ---------------------------------
 
 #include <QFile>
 #include <QJsonArray>
@@ -27,10 +24,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->setWindowIcon(QIcon("icon.png"));
 
-    // 1. Ініціалізація мережі
+    // Ініціалізація мережі
     m_netManager = new QNetworkAccessManager(this);
 
-    // 2. Налаштування таблиці
+    // Налаштування таблиці
     ui->tableWidget->setColumnCount(6);
     QStringList headers = {"Cover", "Title", "Author", "Genre", "Year", "Qty"};
     ui->tableWidget->setHorizontalHeaderLabels(headers);
@@ -41,21 +38,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableWidget->verticalHeader()->setDefaultSectionSize(90);
     ui->tableWidget->setIconSize(QSize(60, 80));
 
-    // --- БЛОК РОЗТЯГУВАННЯ КОЛОНОК ---
+    // БЛлок розтягування колонок
     QHeaderView *header = ui->tableWidget->horizontalHeader();
-    header->setSectionResizeMode(QHeaderView::Stretch); // Всі тягнуться
-    header->setSectionResizeMode(0, QHeaderView::Fixed); // Перша (Cover) фіксована
+    header->setSectionResizeMode(QHeaderView::Stretch); 
+    header->setSectionResizeMode(0, QHeaderView::Fixed);
     ui->tableWidget->setColumnWidth(0, 80);
 
-    // 3. Створення папки для обкладинок
+    // Створення папки для обкладинок
     if (!QDir("covers").exists()) {
         QDir().mkdir("covers");
     }
 
-    // ВАЖЛИВО: Я видалив ручний connect для exportPdfButton,
-    // щоб вікно не відкривалося двічі.
-
-    // 4. Завантаження даних при старті
+    // Завантаження даних при старті
     loadBooks();
     refreshTable(m_books);
 }
@@ -65,8 +59,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// --- ПОШУК (API) ---
-
+// API
 void MainWindow::on_searchButton_clicked()
 {
     QString query = ui->searchEdit->text().trimmed();
@@ -165,7 +158,7 @@ void MainWindow::onCoverDownloadFinished(QNetworkReply *reply)
     reply->deleteLater();
 }
 
-// --- КНОПКИ ---
+// Кнопки
 
 void MainWindow::on_addButton_clicked()
 {
@@ -263,7 +256,7 @@ void MainWindow::on_uploadCoverButton_clicked()
     }
 }
 
-// --- ДОПОМІЖНІ ФУНКЦІЇ ---
+// Допоміжні функції
 
 QString MainWindow::generateDefaultCover(const QString &title)
 {
@@ -415,7 +408,7 @@ void MainWindow::on_clearFilterButton_clicked()
     refreshTable(m_books);
 }
 
-// --- ЕКСПОРТ В PDF (Виправлений) ---
+// Експорт в PDF
 void MainWindow::on_exportPdfButton_clicked()
 {
     QString fileName = QFileDialog::getSaveFileName(this, "Зберегти звіт у PDF", "", "PDF Files (*.pdf)");
@@ -430,7 +423,7 @@ void MainWindow::on_exportPdfButton_clicked()
     int pageHeight = writer.height();
     int y = 1000;
 
-    // --- ЗАГОЛОВОК ---
+    // Заголовок
     QFont titleFont("Arial", 20, QFont::Bold);
     painter.setFont(titleFont);
     painter.drawText(QRect(0, y, pageWidth, 1000), Qt::AlignCenter, "Звіт бібліотеки");
@@ -441,7 +434,7 @@ void MainWindow::on_exportPdfButton_clicked()
     painter.drawText(QRect(0, y, pageWidth, 500), Qt::AlignRight, "Дата: " + QDate::currentDate().toString("dd.MM.yyyy") + "   ");
     y += 800;
 
-    // --- ШАПКА ТАБЛИЦІ ---
+    // Шапка таблиці
     int colTitleW = pageWidth * 0.35;
     int colAuthorW = pageWidth * 0.25;
     int colGenreW = pageWidth * 0.20;
@@ -468,7 +461,6 @@ void MainWindow::on_exportPdfButton_clicked()
     painter.drawLine(0, y, pageWidth, y);
     y += 200;
 
-    // --- ДАНІ (З АВТОМАТИЧНОЮ ВИСОТОЮ І ПЕРЕНОСОМ) ---
     QFont textFont("Arial", 10);
     painter.setFont(textFont);
 
@@ -476,8 +468,7 @@ void MainWindow::on_exportPdfButton_clicked()
     int textFlags = Qt::TextWordWrap | Qt::AlignTop | Qt::AlignLeft;
 
     for (const Book &b : m_books) {
-        // 1. Розраховуємо необхідну висоту рядка
-        // Ми запитуємо у painter: "Скільки місця займе цей текст, якщо його ширина буде ось така?"
+        // Розраховуємо необхідну висоту рядка
         QRect rTitle = painter.boundingRect(QRect(0, 0, colTitleW, 0), textFlags, " " + b.title());
         QRect rAuthor = painter.boundingRect(QRect(0, 0, colAuthorW, 0), textFlags, " " + b.author());
         QRect rGenre = painter.boundingRect(QRect(0, 0, colGenreW, 0), textFlags, " " + b.genre());
@@ -489,27 +480,27 @@ void MainWindow::on_exportPdfButton_clicked()
         rowHeight = qMax(rowHeight, rGenre.height());
         rowHeight += 100; // Трохи повітря знизу
 
-        // 2. Перевірка на кінець сторінки
+        // Перевірка на кінець сторінки
         if (y + rowHeight > pageHeight - 1000) {
             writer.newPage();
             y = 1000;
         }
 
-        // 3. Малюємо дані в прямокутниках з розрахованою висотою
+        // Малюємо дані в прямокутниках з розрахованою висотою
         painter.drawText(QRect(xTitle, y, colTitleW, rowHeight), textFlags, " " + b.title());
         painter.drawText(QRect(xAuthor, y, colAuthorW, rowHeight), textFlags, " " + b.author());
         painter.drawText(QRect(xGenre, y, colGenreW, rowHeight), textFlags, " " + b.genre());
 
-        // Рік і кількість (центруємо по вертикалі)
+        // Рік і кількість
         painter.drawText(QRect(xYear, y, colYearW, rowHeight), Qt::AlignTop | Qt::AlignCenter, QString::number(b.year()));
         painter.drawText(QRect(xQty, y, colQtyW, rowHeight), Qt::AlignTop | Qt::AlignCenter, QString::number(b.quantity()));
 
-        // Лінія-розділювач (сіра)
+        // Лінія-розділювач
         painter.setPen(QPen(Qt::lightGray));
         painter.drawLine(0, y + rowHeight, pageWidth, y + rowHeight);
         painter.setPen(QPen(Qt::black));
 
-        y += rowHeight + 100; // Наступний рядок
+        y += rowHeight + 100;
     }
 
     painter.end();
