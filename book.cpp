@@ -25,7 +25,7 @@ QJsonObject Book::toJson() const {
     obj["genre"] = m_genre;
     obj["year"] = m_year;
     obj["quantity"] = m_quantity;
-    obj["imagePath"] = m_imagePath; // Зберігаємо
+    obj["imagePath"] = m_imagePath;
     return obj;
 }
 
@@ -36,6 +36,6 @@ Book Book::fromJson(const QJsonObject &obj) {
         obj["genre"].toString(),
         obj["year"].toInt(),
         obj["quantity"].toInt(),
-        obj["imagePath"].toString() // Завантажуємо
+        obj["imagePath"].toString()
         );
 }
