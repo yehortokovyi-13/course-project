@@ -30,12 +30,12 @@ private slots:
     void on_searchButton_clicked();     // Кнопка пошуку API
     void on_uploadCoverButton_clicked();// Кнопка завантаження свого фото
 
-    // --- Слоти таблиці та фільтрів ---
+    // Слоти таблиці та фільтрів
     void on_tableWidget_itemSelectionChanged();
     void on_filterButton_clicked();
     void on_clearFilterButton_clicked();
 
-    // --- Слоти для роботи з мережею (API) ---
+    // Слоти для роботи з мережею
     void onApiSearchResult(QNetworkReply *reply);
     void onCoverDownloadFinished(QNetworkReply *reply);
 
@@ -62,9 +62,7 @@ private:
 
     // Зберегти картинку в папку covers
     QString saveImageToCoversFolder(const QString &tempPath, const QString &title);
-
-    // [ВАЖЛИВО] Ось функція, якої не вистачало:
     QString generateDefaultCover(const QString &title);
 };
 
-#endif // MAINWINDOW_H
+#endif
